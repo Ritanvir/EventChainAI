@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Log in · EventChain AI{% endblock %}
+{% block content %}
+<section class="section narrow">
+  <div class="form-card">
+    <span class="eyebrow">Welcome back</span>
+    <h1>Log in</h1>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        {{ form.email.label }}
+        {{ form.email(class="input", placeholder="you@example.com") }}
+        {% for e in form.email.errors %}<small class="field-error">{{ e }}</small>{% endfor %}
+      </div>
+      <div class="form-group">
+        {{ form.password.label }}
+        {{ form.password(class="input", placeholder="Your password") }}
+        {% for e in form.password.errors %}<small class="field-error">{{ e }}</small>{% endfor %}
+      </div>
+      {{ form.submit(class="btn btn-block") }}
+    </form>
+    <p class="form-foot">No account? <a href="{{ url_for('auth.register') }}">Create one</a>.</p>
+  </div>
+</section>
+{% endblock %}

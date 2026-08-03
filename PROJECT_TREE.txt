@@ -1,0 +1,82 @@
+EventChainAI/
+├── app/
+│   ├── auth/
+│   │   ├── __init__.py
+│   │   └── routes.py
+│   ├── blockchain/
+│   │   ├── __init__.py
+│   │   └── routes.py
+│   ├── events/
+│   │   ├── __init__.py
+│   │   └── routes.py
+│   ├── main/
+│   │   ├── __init__.py
+│   │   └── routes.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── ai_planner.py
+│   │   └── blockchain_service.py
+│   ├── static/
+│   │   ├── css/
+│   │   │   └── styles.css
+│   │   ├── js/
+│   │   │   ├── blockchain.js
+│   │   │   └── main.js
+│   │   └── vendor/
+│   │       └── README.txt
+│   ├── templates/
+│   │   ├── auth/
+│   │   │   ├── login.html
+│   │   │   └── register.html
+│   │   ├── errors/
+│   │   │   └── error.html
+│   │   ├── events/
+│   │   │   ├── _card.html
+│   │   │   ├── ai_plan.html
+│   │   │   ├── detail.html
+│   │   │   ├── form.html
+│   │   │   ├── list.html
+│   │   │   └── manage.html
+│   │   ├── tickets/
+│   │   │   ├── list.html
+│   │   │   └── verify.html
+│   │   ├── base.html
+│   │   ├── dashboard.html
+│   │   └── home.html
+│   ├── __init__.py
+│   ├── config.py
+│   ├── decorators.py
+│   ├── extensions.py
+│   ├── forms.py
+│   └── models.py
+├── blockchain/
+│   └── deployment.json
+├── contracts/
+│   └── EventChain.sol
+├── docs/
+│   ├── DEMO_AND_VIVA.md
+│   ├── Original_Group_12_Project_Proposal.pdf
+│   ├── PROJECT_ARCHITECTURE.md
+│   ├── REQUIREMENTS_MAPPING.md
+│   ├── SRS.md
+│   ├── TEST_CASES.md
+│   └── VALIDATION.md
+├── scripts/
+│   └── deploy.cjs
+├── test/
+│   └── EventChain.test.cjs
+├── tests/
+│   ├── conftest.py
+│   ├── test_ai_planner.py
+│   └── test_app.py
+├── .env.example
+├── .gitignore
+├── hardhat.config.js
+├── package.json
+├── PROJECT_TREE.txt
+├── README.md
+├── README_BANGLA.md
+├── requirements.txt
+├── run.py
+├── setup_linux_mac.sh
+└── setup_windows.bat

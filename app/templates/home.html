@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}EventChain AI · Smart Event Management{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">AI + Ethereum event platform</span>
+      <h1>Plan smarter. Sell secure tickets. Track every payment.</h1>
+      <p class="hero-copy">EventChain AI combines explainable event planning with NFT ticketing, sponsorship transparency, and vendor escrow.</p>
+      <div class="hero-actions">
+        <a class="btn" href="{{ url_for('events.event_list') }}">Explore events</a>
+        {% if current_user.is_authenticated and current_user.role in ['organizer', 'admin'] %}
+          <a class="btn btn-secondary" href="{{ url_for('events.create_event') }}">Create an event</a>
+        {% else %}
+          <a class="btn btn-secondary" href="{{ url_for('auth.register') }}">Start now</a>
+        {% endif %}
+      </div>
+      <div class="hero-stats">
+        <div><strong>ERC-721</strong><span>NFT tickets</span></div>
+        <div><strong>On-chain</strong><span>fund tracking</span></div>
+        <div><strong>LangGraph</strong><span>planning workflow</span></div>
+      </div>
+    </div>
+    <div class="hero-panel">
+      <div class="panel-kicker">Event intelligence</div>
+      <h3>One workflow, four decisions</h3>
+      <ol class="workflow-list">
+        <li><span>01</span><div><strong>Plan</strong><small>Budget, timeline, resources</small></div></li>
+        <li><span>02</span><div><strong>Publish</strong><small>Organizer signs on Ethereum</small></div></li>
+        <li><span>03</span><div><strong>Transact</strong><small>Tickets, sponsors, escrow</small></div></li>
+        <li><span>04</span><div><strong>Verify</strong><small>Ownership and one-time check-in</small></div></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="section container">
+  <div class="section-heading">
+    <div><span class="eyebrow">Upcoming</span><h2>Discover events</h2></div>
+    <a href="{{ url_for('events.event_list') }}">View all events →</a>
+  </div>
+  <div class="card-grid">
+    {% for event in events %}
+      {% include "events/_card.html" %}
+    {% else %}
+      <div class="empty-state">No upcoming events yet.</div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="section section-soft">
+  <div class="container feature-grid">
+    <article><span class="feature-icon">AI</span><h3>Explainable planning</h3><p>Generate a category-aware budget, schedule, risk register, and staffing recommendation.</p></article>
+    <article><span class="feature-icon">NFT</span><h3>Fraud-resistant tickets</h3><p>Each successful purchase mints a unique ERC-721 ticket tied to the buyer's wallet.</p></article>
+    <article><span class="feature-icon">Ξ</span><h3>Transparent finance</h3><p>Track sponsor funds and protect vendor payments with smart-contract escrow.</p></article>
+  </div>
+</section>
+{% endblock %}

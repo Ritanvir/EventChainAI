@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} · EventChain AI{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">Organizer workspace</span>
+    <h1>{{ heading }}</h1>
+    <p>The AI workflow will generate the initial budget, schedule, risks, and resources.</p>
+  </div>
+</section>
+<section class="section container form-layout">
+  <form method="post" class="form-card wide" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-row">
+      <div class="form-group">{{ form.title.label }}{{ form.title(class="input") }}{% for e in form.title.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div>
+      <div class="form-group">{{ form.category.label }}{{ form.category(class="input") }}{% for e in form.category.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div>
+    </div>
+    <div class="form-group">{{ form.description.label }}{{ form.description(class="input", rows="5") }}{% for e in form.description.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div>
+    <div class="form-row">
+      <div class="form-group">{{ form.venue.label }}{{ form.venue(class="input") }}{% for e in form.venue.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div>
+      <div class="form-group">{{ form.event_date.label }}{{ form.event_date(class="input") }}{% for e in form.event_date.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div>
+    </div>
+    <div class="form-row three">
+      <div class="form-group">{{ form.attendee_capacity.label }}{{ form.attendee_capacity(class="input") }}{% for e in form.attendee_capacity.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div>
+      <div class="form-group">{{ form.ticket_price_eth.label }}{{ form.ticket_price_eth(class="input", step="0.00000001") }}{% for e in form.ticket_price_eth.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div>
+      <div class="form-group">{{ form.budget_bdt.label }}{{ form.budget_bdt(class="input", step="0.01") }}{% for e in form.budget_bdt.errors %}<small class="field-error">{{ e }}</small>{% endfor %}</div>
+    </div>
+    {{ form.submit(class="btn") }}
+  </form>
+  <aside class="info-card">
+    <h3>Before blockchain publication</h3>
+    <p>You can edit all event information while it remains a local draft.</p>
+    <h3>After publication</h3>
+    <p>The event ID, price, and capacity are fixed in this MVP to keep the local database aligned with the smart contract.</p>
+  </aside>
+</section>
+{% endblock %}

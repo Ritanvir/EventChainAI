@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Verify ticket · EventChain AI{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">Blockchain validation</span>
+    <h1>Verify NFT ticket</h1>
+    <p>Read the token owner and check-in status directly from the smart contract.</p>
+  </div>
+</section>
+<section class="section narrow">
+  <div class="form-card">
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        {{ form.token_id.label }}
+        {{ form.token_id(class="input", placeholder="Example: 1") }}
+        {% for e in form.token_id.errors %}<small class="field-error">{{ e }}</small>{% endfor %}
+      </div>
+      {{ form.submit(class="btn btn-block") }}
+    </form>
+  </div>
+  {% if result %}
+    <div class="verification-card {{ 'valid-card' if result.valid and not result.used else 'warning-card' }}">
+      <div class="verification-icon">{{ '✓' if result.valid and not result.used else '!' }}</div>
+      <div>
+        <span class="eyebrow">On-chain result</span>
+        <h2>
+          {% if not result.valid %}Invalid ticket
+          {% elif result.used %}Valid but already used
+          {% else %}Valid ticket{% endif %}
+        </h2>
+        <dl class="data-list">
+          <div><dt>Token ID</dt><dd>#{{ result.token_id }}</dd></div>
+          <div><dt>Event ID</dt><dd>{{ result.event_id }}</dd></div>
+          <div><dt>Owner</dt><dd class="hash">{{ result.owner }}</dd></div>
+          <div><dt>Checked in</dt><dd>{{ 'Yes' if result.used else 'No' }}</dd></div>
+          {% if result.event %}<div><dt>Event</dt><dd>{{ result.event.title }}</dd></div>{% endif %}
+        </dl>
+        {% if current_user.is_authenticated and result.event and (current_user.role == 'admin' or result.event.organizer_id == current_user.id) and result.valid and not result.used %}
+          <button class="btn" type="button" onclick="EventChain.checkInTicket({{ result.token_id }})">Check in on Ethereum</button>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

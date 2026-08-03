@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Manage {{ event.title }} · EventChain AI{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">Organizer control room</span>
+    <h1>{{ event.title }}</h1>
+    <div class="header-actions">
+      <a class="btn btn-secondary" href="{{ url_for('events.event_detail', event_id=event.id) }}">Public page</a>
+      {% if event.chain_status != 'published' %}
+        <a class="btn btn-outline" href="{{ url_for('events.edit_event', event_id=event.id) }}">Edit event</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+<section class="section container">
+  <div class="metric-grid">
+    <div class="metric"><span>Chain status</span><strong>{{ event.chain_status|replace('_',' ')|title }}</strong></div>
+    <div class="metric"><span>Tickets synced</span><strong>{{ event.tickets|length }}</strong></div>
+    <div class="metric"><span>Sponsors synced</span><strong>{{ event.sponsorships|length }}</strong></div>
+    <div class="metric"><span>Vendor escrows</span><strong>{{ event.escrows|length }}</strong></div>
+  </div>
+
+  {% if event.chain_status != 'published' %}
+    <div class="action-card callout">
+      <div>
+        <span class="eyebrow">Step 1</span>
+        <h2>Publish this event on Ethereum</h2>
+        <p>This creates the immutable on-chain event record used by tickets, sponsors, and escrow.</p>
+      </div>
+      <button class="btn" type="button"
+        onclick='EventChain.publishEvent({{ event.id }}, {{ event.title|tojson }}, "{{ event.ticket_price_display }}", {{ event.attendee_capacity }})'>
+        Publish on Ethereum
+      </button>
+    </div>
+  {% else %}
+    <div class="action-card success-callout">
+      <div>
+        <span class="eyebrow">Published</span>
+        <h2>Blockchain features are active</h2>
+        <p class="hash">Transaction: {{ event.blockchain_tx_hash }}</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="two-column">
+    <section class="content-card">
+      <div class="section-heading compact">
+        <div><span class="eyebrow">Escrow</span><h2>Create vendor payment</h2></div>
+      </div>
+      {% if event.chain_status == 'published' %}
+        <div class="form-group">
+          <label for="vendor-wallet">Vendor wallet</label>
+          <input id="vendor-wallet" class="input" placeholder="0x…">
+        </div>
+        <div class="form-group">
+          <label for="vendor-description">Service description</label>
+          <input id="vendor-description" class="input" placeholder="Sound system and stage lighting">
+        </div>
+        <div class="form-group">
+          <label for="vendor-amount">Amount (ETH)</label>
+          <input id="vendor-amount" class="input" type="number" min="0" step="0.001" value="0.1">
+        </div>
+        <button class="btn" type="button" onclick="EventChain.createEscrow({{ event.id }})">Lock vendor escrow</button>
+      {% else %}
+        <p>Publish the event first.</p>
+      {% endif %}
+    </section>
+
+    <section class="content-card">
+      <div class="section-heading compact">
+        <div><span class="eyebrow">Revenue</span><h2>Withdraw event funds</h2></div>
+      </div>
+      <p>Withdraw ticket and sponsorship funds accumulated in the contract.</p>
+      <div class="form-group">
+        <label for="withdraw-amount">Amount (ETH)</label>
+        <input id="withdraw-amount" class="input" type="number" min="0" step="0.001" value="0.01">
+      </div>
+      <button class="btn btn-secondary" type="button"
+        {% if event.chain_status != 'published' %}disabled{% endif %}
+        onclick="EventChain.withdrawFunds({{ event.id }})">
+        Withdraw to organizer wallet
+      </button>
+    </section>
+  </div>
+
+  <section class="content-card table-card">
+    <div class="section-heading compact">
+      <div><span class="eyebrow">Payments</span><h2>Vendor escrows</h2></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Vendor</th><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for escrow in event.escrows %}
+            <tr>
+              <td>#{{ escrow.chain_escrow_id }}</td>
+              <td><span class="hash">{{ escrow.vendor_wallet }}</span></td>
+              <td>{{ escrow.description }}</td>
+              <td>{{ escrow.amount_eth }} ETH</td>
+              <td><span class="status status-{{ escrow.status }}">{{ escrow.status }}</span></td>
+              <td>
+                {% if escrow.status == 'locked' %}
+                  <button class="btn btn-small" type="button" onclick="EventChain.releaseEscrow({{ escrow.chain_escrow_id }})">Release</button>
+                  <button class="btn btn-small btn-outline" type="button" onclick="EventChain.refundEscrow({{ escrow.chain_escrow_id }})">Refund</button>
+                {% else %}
+                  Completed
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6">No escrow records yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="content-card table-card">
+    <div class="section-heading compact">
+      <div><span class="eyebrow">Entry control</span><h2>Issued tickets</h2></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Token</th><th>Owner wallet</th><th>Status</th><th>Transaction</th><th>Action</th></tr></thead>
+        <tbody>
+          {% for ticket in event.tickets %}
+            <tr>
+              <td>#{{ ticket.token_id }}</td>
+              <td class="hash">{{ ticket.buyer_wallet }}</td>
+              <td><span class="status status-{{ ticket.status }}">{{ ticket.status }}</span></td>
+              <td class="hash">{{ ticket.tx_hash }}</td>
+              <td>
+                {% if ticket.status != 'used' %}
+                  <button class="btn btn-small" type="button" onclick="EventChain.checkInTicket({{ ticket.token_id }})">Check in</button>
+                {% else %}
+                  Checked in
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="5">No ticket purchases synchronized yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
+{% endblock %}

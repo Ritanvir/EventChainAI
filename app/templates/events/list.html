@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Events · EventChain AI{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">Marketplace</span>
+    <h1>Events</h1>
+    <p>Browse AI-planned events and purchase verifiable NFT tickets.</p>
+  </div>
+</section>
+<section class="section container">
+  <div class="card-grid">
+    {% for event in events %}
+      {% include "events/_card.html" %}
+    {% else %}
+      <div class="empty-state">No events have been created.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

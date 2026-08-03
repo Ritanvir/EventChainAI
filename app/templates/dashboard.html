@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · EventChain AI{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">{{ current_user.role|title }} account</span>
+    <h1>Hello, {{ current_user.name }}</h1>
+    <p>
+      {% if current_user.wallet_address %}
+        Connected wallet: <span class="hash">{{ current_user.wallet_address }}</span>
+      {% else %}
+        Connect MetaMask to use blockchain features.
+      {% endif %}
+    </p>
+  </div>
+</section>
+<section class="section container">
+  {% if admin_stats %}
+    <div class="metric-grid">
+      <div class="metric"><span>Users</span><strong>{{ admin_stats.users }}</strong></div>
+      <div class="metric"><span>Events</span><strong>{{ admin_stats.events }}</strong></div>
+      <div class="metric"><span>Tickets</span><strong>{{ admin_stats.tickets }}</strong></div>
+      <div class="metric"><span>Transactions</span><strong>{{ admin_stats.transactions }}</strong></div>
+    </div>
+  {% endif %}
+
+  {% if organized_events is defined %}
+    <section class="content-card table-card">
+      <div class="section-heading compact">
+        <div><span class="eyebrow">Organizer</span><h2>My events</h2></div>
+        <a class="btn btn-small" href="{{ url_for('events.create_event') }}">New event</a>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Event</th><th>Date</th><th>Chain</th><th>Tickets</th><th></th></tr></thead>
+          <tbody>
+            {% for event in organized_events %}
+              <tr>
+                <td>{{ event.title }}</td>
+                <td>{{ event.event_date }}</td>
+                <td>{{ event.chain_status }}</td>
+                <td>{{ event.tickets|length }}</td>
+                <td><a href="{{ url_for('events.manage_event', event_id=event.id) }}">Manage →</a></td>
+              </tr>
+            {% else %}
+              <tr><td colspan="5">No events yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {% endif %}
+
+  <div class="two-column">
+    <section class="content-card">
+      <span class="eyebrow">Attendee</span>
+      <h2>My tickets</h2>
+      {% for ticket in my_tickets %}
+        <div class="list-row">
+          <div><strong>#{{ ticket.token_id }} · {{ ticket.event.title }}</strong><small>{{ ticket.status }}</small></div>
+          <a href="{{ url_for('events.verify_ticket', token_id=ticket.token_id) }}">Verify</a>
+        </div>
+      {% else %}
+        <p class="muted">No tickets synchronized.</p>
+      {% endfor %}
+    </section>
+    <section class="content-card">
+      <span class="eyebrow">Sponsor</span>
+      <h2>My sponsorships</h2>
+      {% for item in my_sponsorships %}
+        <div class="list-row">
+          <div><strong>{{ item.event.title }}</strong><small>{{ item.amount_eth }} ETH</small></div>
+          <span class="hash">{{ item.tx_hash[:10] }}…</span>
+        </div>
+      {% else %}
+        <p class="muted">No sponsorships synchronized.</p>
+      {% endfor %}
+    </section>
+  </div>
+
+  <section class="content-card">
+    <span class="eyebrow">Vendor</span>
+    <h2>Escrows for my wallet</h2>
+    {% for item in vendor_escrows %}
+      <div class="list-row">
+        <div><strong>#{{ item.chain_escrow_id }} · {{ item.event.title }}</strong><small>{{ item.description }} · {{ item.amount_eth }} ETH</small></div>
+        <span class="status status-{{ item.status }}">{{ item.status }}</span>
+      </div>
+    {% else %}
+      <p class="muted">No vendor escrow found for the connected wallet.</p>
+    {% endfor %}
+  </section>
+
+  {% if recent_transactions %}
+    <section class="content-card table-card">
+      <span class="eyebrow">Admin</span>
+      <h2>Recent blockchain transactions</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Type</th><th>Event</th><th>User</th><th>Hash</th><th>Time</th></tr></thead>
+          <tbody>
+            {% for tx in recent_transactions %}
+              <tr>
+                <td>{{ tx.tx_type }}</td>
+                <td>{{ tx.event.title if tx.event else '-' }}</td>
+                <td>{{ tx.user.email if tx.user else '-' }}</td>
+                <td class="hash">{{ tx.tx_hash }}</td>
+                <td>{{ tx.created_at }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {% endif %}
+</section>
+{% endblock %}

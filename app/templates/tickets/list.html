@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My tickets · EventChain AI{% endblock %}
+{% block content %}
+<section class="page-header">
+  <div class="container">
+    <span class="eyebrow">Wallet-linked access</span>
+    <h1>My NFT tickets</h1>
+    <p>Each record was verified from a successful blockchain transaction.</p>
+  </div>
+</section>
+<section class="section container ticket-grid">
+  {% for ticket in tickets %}
+    <article class="ticket-card">
+      <div>
+        <span class="badge">Token #{{ ticket.token_id }}</span>
+        <h2>{{ ticket.event.title }}</h2>
+        <p>{{ ticket.event.event_date.strftime('%d %B %Y') }} · {{ ticket.event.venue }}</p>
+        <p class="hash">Owner: {{ ticket.buyer_wallet }}</p>
+        <span class="status status-{{ ticket.status }}">{{ ticket.status }}</span>
+      </div>
+      <div class="ticket-qr">
+        <img src="{{ url_for('events.ticket_qr', ticket_id=ticket.id) }}" alt="Verification QR">
+        <a href="{{ url_for('events.verify_ticket', token_id=ticket.token_id) }}">Verify</a>
+      </div>
+    </article>
+  {% else %}
+    <div class="empty-state">You have not synchronized any NFT tickets yet.</div>
+  {% endfor %}
+</section>
+{% endblock %}
