@@ -1,0 +1,651 @@
+{% extends "base.html" %}
+
+{% block title %}
+AI Event Planner · EventChain AI
+{% endblock %}
+
+{% block content %}
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<section class="page-header">
+    <div class="container">
+
+        <span class="eyebrow">
+            LangGraph AI Event Planner
+        </span>
+
+        <h1>
+            AI Event Planner
+        </h1>
+
+        <p>
+            Enter your event description, total budget and expected
+            audience. EventChain AI will automatically generate a
+            complete event plan.
+        </p>
+
+    </div>
+</section>
+
+
+<!-- =====================================================
+     INPUT SECTION
+===================================================== -->
+
+<section class="section container">
+
+    <div class="two-column">
+
+        <!-- FORM -->
+
+        <section class="content-card">
+
+            <span class="eyebrow">
+                Planning Input
+            </span>
+
+            <h2>
+                Describe your event
+            </h2>
+
+            <form
+                method="POST"
+                action="{{ url_for('events.local_ai_event_planner') }}"
+                id="aiPlannerForm"
+            >
+
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="form-group">
+
+                    <label for="description">
+                        Event Description
+                    </label>
+
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="7"
+                        required
+                        placeholder="Example: I want to organize a university hackathon for CSE students, featuring coding competitions, AI workshops, project presentations, lunch, certificates, and prizes."
+                    >{{ description or '' }}</textarea>
+
+                </div>
+
+
+                <!-- BUDGET -->
+
+                <div class="form-group">
+
+                    <label for="budget_bdt">
+                        Total Budget (BDT)
+                    </label>
+
+                    <input
+                        id="budget_bdt"
+                        type="number"
+                        name="budget_bdt"
+                        min="1"
+                        step="1"
+                        required
+                        value="{{ budget_bdt or '' }}"
+                        placeholder="500000"
+                    >
+
+                </div>
+
+
+                <!-- AUDIENCE -->
+
+                <div class="form-group">
+
+                    <label for="audience">
+                        Expected Audience
+                    </label>
+
+                    <input
+                        id="audience"
+                        type="number"
+                        name="audience"
+                        min="1"
+                        step="1"
+                        required
+                        value="{{ audience or '' }}"
+                        placeholder="300"
+                    >
+
+                </div>
+
+
+                <!-- BUTTON -->
+
+                <div style="margin-top: 24px;">
+
+                    <button
+                        type="submit"
+                        class="button primary"
+                        id="generateBtn"
+                        style="width: 100%;"
+                    >
+
+                        <span id="normalButtonText">
+                            Generate AI Plan
+                        </span>
+
+                        <span
+                            id="loadingButtonText"
+                            style="display: none;"
+                        >
+                            Generating AI Plan...
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <!-- INFO -->
+
+        <section class="content-card">
+
+            <span class="eyebrow">
+                AI Planning Engine
+            </span>
+
+            <h2>
+                What will be generated?
+            </h2>
+
+            <ul class="check-list">
+
+                <li>
+                    Automatic event category detection
+                </li>
+
+                <li>
+                    Event size and operational risk analysis
+                </li>
+
+                <li>
+                    Complete budget allocation
+                </li>
+
+                <li>
+                    Budget per attendee
+                </li>
+
+                <li>
+                    Required staff estimation
+                </li>
+
+                <li>
+                    Recommended check-in points
+                </li>
+
+                <li>
+                    Event preparation timeline
+                </li>
+
+                <li>
+                    Risk register and mitigation measures
+                </li>
+
+                <li>
+                    Operational resource recommendations
+                </li>
+
+            </ul>
+
+            <p style="margin-top: 20px;">
+                <strong>Technology:</strong>
+                LangGraph-based local planning workflow
+            </p>
+
+            <p>
+                <strong>External API:</strong>
+                Not required
+            </p>
+
+        </section>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     GENERATED PLAN
+===================================================== -->
+
+{% if generated_plan %}
+
+<section class="section container">
+
+
+    <!-- SUMMARY -->
+
+    <section class="content-card">
+
+        <span class="eyebrow">
+            AI Planning Output
+        </span>
+
+        <h2>
+            {{ suggested_title or "Generated Event Plan" }}
+        </h2>
+
+        <p>
+            {{ generated_plan.summary }}
+        </p>
+
+        {% if detected_category %}
+
+        <p>
+            <strong>
+                Detected Category:
+            </strong>
+
+            {{ detected_category|title }}
+        </p>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =================================================
+         METRICS
+    ================================================== -->
+
+    <div class="metric-grid">
+
+        <div class="metric">
+
+            <span>
+                Event Size
+            </span>
+
+            <strong>
+                {{ generated_plan.profile.event_size|title }}
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Risk Level
+            </span>
+
+            <strong>
+                {{ generated_plan.profile.risk_level|title }}
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Staff Estimate
+            </span>
+
+            <strong>
+                {{ generated_plan.profile.estimated_staff }}
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Check-in Points
+            </span>
+
+            <strong>
+                {{ generated_plan.profile.recommended_check_in_points }}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+         BUDGET + RESOURCES
+    ================================================== -->
+
+    <div class="two-column">
+
+
+        <!-- BUDGET -->
+
+        <section class="content-card">
+
+            <span class="eyebrow">
+                Budget Optimization
+            </span>
+
+            <h2>
+                Recommended Allocation
+            </h2>
+
+
+            <p>
+
+                Total:
+
+                <strong>
+                    ৳{{ "{:,.2f}".format(
+                        generated_plan.budget.total_bdt
+                    ) }}
+                </strong>
+
+                <br>
+
+                Per attendee:
+
+                <strong>
+                    ৳{{ "{:,.2f}".format(
+                        generated_plan.budget.per_attendee_bdt
+                    ) }}
+                </strong>
+
+            </p>
+
+
+            <div class="budget-list">
+
+                {% for item in generated_plan.budget['items'] %}
+
+                <div>
+
+                    <span>
+
+                        {{ item.item }}
+
+                        <small>
+                            {{ item.percentage }}%
+                        </small>
+
+                    </span>
+
+                    <strong>
+                        ৳{{ "{:,.0f}".format(
+                            item.amount_bdt
+                        ) }}
+                    </strong>
+
+                    <i
+                        style="--width: {{ item.percentage }}%"
+                    ></i>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- RESOURCES -->
+
+        <section class="content-card">
+
+            <span class="eyebrow">
+                Resources
+            </span>
+
+            <h2>
+                Operational Recommendations
+            </h2>
+
+            <ul class="check-list">
+
+                {% for item in generated_plan.resources %}
+
+                <li>
+                    {{ item }}
+                </li>
+
+                {% endfor %}
+
+            </ul>
+
+
+            <h3>
+                Assumptions
+            </h3>
+
+            <ul>
+
+                {% for item in generated_plan.assumptions %}
+
+                <li>
+                    {{ item }}
+                </li>
+
+                {% endfor %}
+
+            </ul>
+
+        </section>
+
+    </div>
+
+
+    <!-- =================================================
+         TIMELINE
+    ================================================== -->
+
+    <section class="content-card">
+
+        <span class="eyebrow">
+            Timeline
+        </span>
+
+        <h2>
+            Preparation Milestones
+        </h2>
+
+
+        <div class="timeline">
+
+            {% for item in generated_plan.timeline %}
+
+            <div class="timeline-item">
+
+                <time>
+                    {{ item.deadline }}
+                </time>
+
+                <div>
+
+                    <h3>
+                        {{ item.phase }}
+                    </h3>
+
+                    <p>
+                        {{ item.actions }}
+                    </p>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- =================================================
+         RISK MANAGEMENT
+    ================================================== -->
+
+    <section class="content-card table-card">
+
+        <span class="eyebrow">
+            Risk Management
+        </span>
+
+        <h2>
+            Risk Register
+        </h2>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>Risk</th>
+                        <th>Probability</th>
+                        <th>Impact</th>
+                        <th>Mitigation</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for risk in generated_plan.risks %}
+
+                    <tr>
+
+                        <td>
+                            {{ risk.risk }}
+                        </td>
+
+                        <td>
+                            {{ risk.probability }}
+                        </td>
+
+                        <td>
+                            {{ risk.impact }}
+                        </td>
+
+                        <td>
+                            {{ risk.mitigation }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- =================================================
+         GENERATE ANOTHER
+    ================================================== -->
+
+    <div
+        style="
+            margin-top: 30px;
+            text-align: center;
+        "
+    >
+
+        <a
+            href="{{ url_for('events.local_ai_event_planner') }}"
+            class="button secondary"
+        >
+            Generate Another AI Plan
+        </a>
+
+    </div>
+
+</section>
+
+{% endif %}
+
+
+<!-- =====================================================
+     LOADING BUTTON
+===================================================== -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const form =
+            document.getElementById(
+                "aiPlannerForm"
+            );
+
+        const button =
+            document.getElementById(
+                "generateBtn"
+            );
+
+        const normalText =
+            document.getElementById(
+                "normalButtonText"
+            );
+
+        const loadingText =
+            document.getElementById(
+                "loadingButtonText"
+            );
+
+
+        if (!form) {
+            return;
+        }
+
+
+        form.addEventListener(
+            "submit",
+            function () {
+
+                if (button) {
+                    button.disabled = true;
+                }
+
+                if (normalText) {
+                    normalText.style.display =
+                        "none";
+                }
+
+                if (loadingText) {
+                    loadingText.style.display =
+                        "inline";
+                }
+
+            }
+        );
+
+    }
+);
+
+</script>
+
+{% endblock %}
