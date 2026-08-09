@@ -75,6 +75,7 @@ button, input, select, textarea { font: inherit; }
   font-weight: 650;
   font-size: .93rem;
 }
+.nav-links > a.btn { color: white; }
 .nav-toggle {
   display: none;
   border: 0;
@@ -412,6 +413,9 @@ h3 { font-size: 1.15rem; }
 .callout { border-left: 5px solid var(--primary); }
 .success-callout { border-left: 5px solid var(--success); }
 .table-card { margin-top: 24px; }
+.card-stack { display: grid; gap: 24px; }
+.card-stack > .metric-grid { gap: 24px; margin-bottom: 0; }
+.card-stack > .table-card { margin-top: 0; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
 th, td {
