@@ -9,14 +9,11 @@
     document.querySelector('meta[name="csrf-token"]')?.content || "";
 
   function alertUser(message, type = "info") {
-    const host = document.getElementById("js-alerts");
-    if (!host) return;
-    const el = document.createElement("div");
-    el.className = `alert alert-${type}`;
-    el.textContent = message;
-    host.appendChild(el);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    setTimeout(() => el.remove(), 8000);
+    if (typeof window.showToast === "function") {
+      window.showToast(message, type);
+    } else {
+      console.warn(`[EventChain] ${type}: ${message}`);
+    }
   }
 
   function setLoading(active, message = "Processing transaction…") {
