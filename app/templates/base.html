@@ -210,45 +210,22 @@
 
     </nav>
 
-</header>
+  <div id="toast-stack" class="toast-stack" role="region" aria-label="Notifications"
+       aria-live="polite" aria-atomic="false">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="toast toast-{{ category }}" data-type="{{ category }}">
+          <span class="toast-icon" aria-hidden="true">{{ {'success': '✓', 'danger': '!', 'warning': '!'}.get(category, 'i') }}</span>
+          <p class="toast-message">{{ message }}</p>
+          <button class="toast-close" type="button" aria-label="Dismiss notification">×</button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+  </div>
 
-
-
-<!-- =====================================================
-     MAIN CONTENT
-===================================================== -->
-
-<main>
-
-
-    <!-- =================================================
-         FLASH MESSAGES
-    ================================================== -->
-
-    <div class="container flash-wrap">
-
-        {% with messages = get_flashed_messages(
-            with_categories=true
-        ) %}
-
-            {% for category, message in messages %}
-
-                <div
-                    class="alert alert-{{ category }}"
-                >
-                    {{ message }}
-                </div>
-
-            {% endfor %}
-
-        {% endwith %}
-
-
-        <!-- JavaScript alerts -->
-
-        <div id="js-alerts"></div>
-
-    </div>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
 
 
     <!-- =================================================
@@ -318,53 +295,11 @@
 
     </div>
 
-</div>
-
-
-
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
-
-
-<!-- Ethers.js -->
-
-<script
-    src="{{ url_for(
-        'static',
-        filename='vendor/ethers.min.js'
-    ) }}"
-></script>
-
-
-<!-- Main JavaScript -->
-
-<script
-    src="{{ url_for(
-        'static',
-        filename='js/main.js'
-    ) }}"
-></script>
-
-
-<!-- Blockchain JavaScript -->
-
-<script
-    src="{{ url_for(
-        'static',
-        filename='js/blockchain.js'
-    ) }}"
-></script>
-
-
-<!-- =====================================================
-     PAGE SPECIFIC JAVASCRIPT
-===================================================== -->
-
-{% block scripts %}
-{% endblock %}
-
-
+  <script src="{{ url_for('static', filename='vendor/ethers.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/toast.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/blockchain.js') }}"></script>
+  {% block scripts %}{% endblock %}
 </body>
 
 </html>

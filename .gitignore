@@ -9,3 +9,11 @@ artifacts/
 cache/
 coverage/
 .DS_Store
+PYTHON_ESSENTIALS.md
+
+# Claude Code
+.claude/
+CLAUDE.md
+.claude.json
+.claude.json.backup
+.mcp.json
