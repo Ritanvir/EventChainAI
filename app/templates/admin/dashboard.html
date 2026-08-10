@@ -1,0 +1,1451 @@
+{% extends "base.html" %}
+
+{% block title %}
+Admin Control Room · EventChain AI
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- =====================================================
+     ADMIN HEADER
+===================================================== -->
+
+<section class="page-header">
+
+    <div class="container">
+
+        <span class="eyebrow">
+            Platform Administration
+        </span>
+
+        <h1>
+            Admin Control Room
+        </h1>
+
+        <p>
+            Monitor users, events, NFT tickets,
+            sponsorships, vendor escrows and blockchain
+            activity across the EventChain AI platform.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     ADMIN NAVIGATION
+===================================================== -->
+
+<section
+    class="section container"
+    style="padding-bottom: 20px;"
+>
+
+    <div class="admin-tabs">
+
+        <a href="#overview">
+            Overview
+        </a>
+
+        <a href="#users">
+            Users
+        </a>
+
+        <a href="#events">
+            Events
+        </a>
+
+        <a href="#finance">
+            Finance
+        </a>
+
+        <a href="#tickets">
+            Tickets
+        </a>
+
+        <a href="#blockchain">
+            Blockchain
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     OVERVIEW
+===================================================== -->
+
+<section
+    id="overview"
+    class="section container"
+    style="padding-top: 20px;"
+>
+
+    <div class="section-heading">
+
+        <div>
+
+            <span class="eyebrow">
+                Platform Overview
+            </span>
+
+            <h2>
+                System Statistics
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <div class="admin-stat-grid">
+
+
+        <div class="metric">
+
+            <span>
+                Total Users
+            </span>
+
+            <strong>
+                {{ stats.users }}
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Total Events
+            </span>
+
+            <strong>
+                {{ stats.events }}
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Published Events
+            </span>
+
+            <strong>
+                {{ stats.published_events }}
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                NFT Tickets
+            </span>
+
+            <strong>
+                {{ stats.tickets }}
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Checked-in Tickets
+            </span>
+
+            <strong>
+                {{ stats.checked_in }}
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Blockchain Transactions
+            </span>
+
+            <strong>
+                {{ stats.transactions }}
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Sponsorship
+            </span>
+
+            <strong>
+                {{ "{:,.4f}".format(stats.sponsorship) }}
+                ETH
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Locked Escrow
+            </span>
+
+            <strong>
+                {{ "{:,.4f}".format(stats.locked_escrow) }}
+                ETH
+            </strong>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     USER MANAGEMENT
+===================================================== -->
+
+<section
+    id="users"
+    class="section container"
+>
+
+    <section class="content-card table-card">
+
+        <span class="eyebrow">
+            Access Control
+        </span>
+
+        <h2>
+            User Management
+        </h2>
+
+        <p class="muted">
+            Review registered users and control
+            their platform roles.
+        </p>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            User
+                        </th>
+
+                        <th>
+                            Email
+                        </th>
+
+                        <th>
+                            Wallet
+                        </th>
+
+                        <th>
+                            Current Role
+                        </th>
+
+                        <th>
+                            Registered
+                        </th>
+
+                        <th>
+                            Change Role
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for user in users %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+                                {{ user.name }}
+                            </strong>
+
+                            {% if user.id == current_user.id %}
+
+                            <br>
+
+                            <small class="muted">
+                                Current administrator
+                            </small>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+                            {{ user.email }}
+                        </td>
+
+
+                        <td>
+
+                            {% if user.wallet_address %}
+
+                            <span class="hash">
+                                {{ user.wallet_address[:8] }}
+                                ...
+                                {{ user.wallet_address[-6:] }}
+                            </span>
+
+                            {% else %}
+
+                            <span class="muted">
+                                Not connected
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="badge">
+
+                                {{ user.role|title }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ user.created_at.strftime(
+                                "%d %b %Y"
+                            ) }}
+
+                        </td>
+
+
+                        <td>
+
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'admin.change_user_role',
+                                    user_id=user.id
+                                ) }}"
+                                class="admin-inline-form"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    value="{{ csrf_token() }}"
+                                >
+
+
+                                <select
+                                    name="role"
+                                    class="input admin-select"
+                                    {% if user.id == current_user.id %}
+                                    disabled
+                                    {% endif %}
+                                >
+
+                                    {% for role in allowed_roles %}
+
+                                    <option
+                                        value="{{ role }}"
+                                        {% if user.role == role %}
+                                        selected
+                                        {% endif %}
+                                    >
+                                        {{ role|title }}
+                                    </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+
+                                {% if user.id != current_user.id %}
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-small"
+                                >
+                                    Update
+                                </button>
+
+                                {% endif %}
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</section>
+
+
+<!-- =====================================================
+     EVENT MANAGEMENT
+===================================================== -->
+
+<section
+    id="events"
+    class="section container"
+>
+
+    <section class="content-card table-card">
+
+        <span class="eyebrow">
+            Event Administration
+        </span>
+
+        <h2>
+            Event Management
+        </h2>
+
+        <p class="muted">
+            Review all events, update local status and
+            regenerate AI plans.
+        </p>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Event
+                        </th>
+
+                        <th>
+                            Organizer
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Blockchain
+                        </th>
+
+                        <th>
+                            Tickets
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Actions
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for event in events %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+                                {{ event.title }}
+                            </strong>
+
+                            <br>
+
+                            <small class="muted">
+
+                                ID #{{ event.id }}
+
+                            </small>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ event.organizer.name }}
+
+                        </td>
+
+
+                        <td>
+
+                            {{ event.event_date.strftime(
+                                "%d %b %Y"
+                            ) }}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="badge">
+
+                                {{ event.category|title }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <span
+                                class="status
+                                status-{{ event.chain_status }}"
+                            >
+
+                                {{ event.chain_status
+                                    .replace("_", " ")
+                                    |title
+                                }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ event.tickets|length }}
+
+                        </td>
+
+
+                        <td>
+
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'admin.change_event_status',
+                                    event_id=event.id
+                                ) }}"
+                                class="admin-inline-form"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    value="{{ csrf_token() }}"
+                                >
+
+
+                                <select
+                                    name="status"
+                                    class="input admin-select"
+                                >
+
+                                    {% for status in allowed_event_status %}
+
+                                    <option
+                                        value="{{ status }}"
+                                        {% if event.status == status %}
+                                        selected
+                                        {% endif %}
+                                    >
+
+                                        {{ status|title }}
+
+                                    </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-small"
+                                >
+                                    Save
+                                </button>
+
+                            </form>
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="admin-actions">
+
+
+                                <a
+                                    href="{{ url_for(
+                                        'events.event_detail',
+                                        event_id=event.id
+                                    ) }}"
+                                    class="btn btn-small btn-outline"
+                                >
+                                    View
+                                </a>
+
+
+                                <a
+                                    href="{{ url_for(
+                                        'events.manage_event',
+                                        event_id=event.id
+                                    ) }}"
+                                    class="btn btn-small btn-outline"
+                                >
+                                    Manage
+                                </a>
+
+
+                                <a
+                                    href="{{ url_for(
+                                        'events.ai_plan',
+                                        event_id=event.id
+                                    ) }}"
+                                    class="btn btn-small btn-outline"
+                                >
+                                    AI Plan
+                                </a>
+
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'admin.regenerate_ai_plan',
+                                        event_id=event.id
+                                    ) }}"
+                                >
+
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-small"
+                                        onclick="
+                                            return confirm(
+                                                'Regenerate AI plan for this event?'
+                                            );
+                                        "
+                                    >
+                                        Regenerate AI
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</section>
+
+
+<!-- =====================================================
+     FINANCE
+===================================================== -->
+
+<section
+    id="finance"
+    class="section container"
+>
+
+    <div class="section-heading">
+
+        <div>
+
+            <span class="eyebrow">
+                Financial Oversight
+            </span>
+
+            <h2>
+                Sponsorship & Vendor Escrow
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <!-- FINANCIAL STATS -->
+
+    <div class="metric-grid">
+
+        <div class="metric">
+
+            <span>
+                Sponsorship Received
+            </span>
+
+            <strong>
+                {{ "{:,.4f}".format(
+                    stats.sponsorship
+                ) }}
+                ETH
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Total Escrow
+            </span>
+
+            <strong>
+                {{ "{:,.4f}".format(
+                    stats.escrow
+                ) }}
+                ETH
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Released Escrow
+            </span>
+
+            <strong>
+                {{ "{:,.4f}".format(
+                    stats.released_escrow
+                ) }}
+                ETH
+            </strong>
+
+        </div>
+
+
+        <div class="metric">
+
+            <span>
+                Refunded Escrow
+            </span>
+
+            <strong>
+                {{ "{:,.4f}".format(
+                    stats.refunded_escrow
+                ) }}
+                ETH
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="two-column">
+
+
+        <!-- SPONSORSHIPS -->
+
+        <section class="content-card table-card">
+
+            <span class="eyebrow">
+                Sponsors
+            </span>
+
+            <h2>
+                Recent Sponsorships
+            </h2>
+
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Event
+                            </th>
+
+                            <th>
+                                Sponsor
+                            </th>
+
+                            <th>
+                                Amount
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for sponsorship in sponsorships %}
+
+                        <tr>
+
+                            <td>
+
+                                {{ sponsorship.event.title }}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if sponsorship.sponsor %}
+
+                                {{ sponsorship.sponsor.name }}
+
+                                {% else %}
+
+                                <span class="hash">
+
+                                    {{ sponsorship.sponsor_wallet[:8] }}
+                                    ...
+
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+
+                                    {{ sponsorship.amount_eth }}
+                                    ETH
+
+                                </strong>
+
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+
+                            <td
+                                colspan="3"
+                                class="muted"
+                            >
+                                No sponsorship records.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- ESCROWS -->
+
+        <section class="content-card table-card">
+
+            <span class="eyebrow">
+                Vendor Payments
+            </span>
+
+            <h2>
+                Vendor Escrows
+            </h2>
+
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Vendor
+                            </th>
+
+                            <th>
+                                Amount
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for escrow in escrows %}
+
+                        <tr>
+
+                            <td>
+
+                                <strong>
+
+                                    {{ escrow.vendor_name }}
+
+                                </strong>
+
+                                <br>
+
+                                <small class="muted">
+
+                                    {{ escrow.event.title }}
+
+                                </small>
+
+                            </td>
+
+
+                            <td>
+
+                                {{ escrow.amount_eth }}
+                                ETH
+
+                            </td>
+
+
+                            <td>
+
+                                <span
+                                    class="status
+                                    status-{{ escrow.status }}"
+                                >
+
+                                    {{ escrow.status|title }}
+
+                                </span>
+
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+
+                            <td
+                                colspan="3"
+                                class="muted"
+                            >
+
+                                No vendor escrow records.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     NFT TICKETS
+===================================================== -->
+
+<section
+    id="tickets"
+    class="section container"
+>
+
+    <section class="content-card table-card">
+
+        <span class="eyebrow">
+            NFT Ticket Monitoring
+        </span>
+
+        <h2>
+            Recent Tickets
+        </h2>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Token
+                        </th>
+
+                        <th>
+                            Event
+                        </th>
+
+                        <th>
+                            User
+                        </th>
+
+                        <th>
+                            Wallet
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Purchased
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for ticket in tickets %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+                                #{{ ticket.token_id }}
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ ticket.event.title }}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if ticket.user %}
+
+                            {{ ticket.user.name }}
+
+                            {% else %}
+
+                            <span class="muted">
+                                Blockchain wallet
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="hash">
+
+                                {{ ticket.buyer_wallet[:8] }}
+                                ...
+                                {{ ticket.buyer_wallet[-6:] }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <span
+                                class="status
+                                status-{{ ticket.status }}"
+                            >
+
+                                {{ ticket.status|title }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ ticket.purchased_at.strftime(
+                                "%d %b %Y %H:%M"
+                            ) }}
+
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            class="muted"
+                        >
+
+                            No NFT ticket records.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</section>
+
+
+<!-- =====================================================
+     BLOCKCHAIN TRANSACTIONS
+===================================================== -->
+
+<section
+    id="blockchain"
+    class="section container"
+>
+
+    <section class="content-card table-card">
+
+        <span class="eyebrow">
+            Ethereum Activity
+        </span>
+
+        <h2>
+            Recent Blockchain Transactions
+        </h2>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            Event
+                        </th>
+
+                        <th>
+                            User
+                        </th>
+
+                        <th>
+                            Transaction Hash
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for tx in transactions %}
+
+                    <tr>
+
+                        <td>
+
+                            <span class="badge">
+
+                                {{ tx.tx_type
+                                    .replace("_", " ")
+                                    |title
+                                }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if tx.event %}
+
+                            {{ tx.event.title }}
+
+                            {% else %}
+
+                            —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            {% if tx.user %}
+
+                            {{ tx.user.name }}
+
+                            {% else %}
+
+                            —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="hash">
+
+                                {{ tx.tx_hash[:10] }}
+                                ...
+                                {{ tx.tx_hash[-8:] }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="status">
+
+                                {{ tx.status|title }}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ tx.created_at.strftime(
+                                "%d %b %Y %H:%M"
+                            ) }}
+
+                        </td>
+
+                    </tr>
+
+                    {% else %}
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            class="muted"
+                        >
+
+                            No blockchain transactions.
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</section>
+
+
+<!-- =====================================================
+     ADMIN PAGE STYLES
+===================================================== -->
+
+<style>
+
+.admin-tabs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-tabs a {
+    padding: 9px 15px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.admin-tabs a:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+
+.admin-stat-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+
+.admin-inline-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+
+.admin-select {
+    min-width: 120px;
+    padding: 7px 9px;
+}
+
+
+.admin-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    min-width: 250px;
+}
+
+
+.admin-actions form {
+    margin: 0;
+}
+
+
+@media (
+    max-width: 900px
+) {
+
+    .admin-stat-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+@media (
+    max-width: 600px
+) {
+
+    .admin-stat-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-inline-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+}
+
+</style>
+
+
+{% endblock %}
